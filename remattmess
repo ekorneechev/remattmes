@@ -45,7 +45,7 @@ def dd_attach(msg, msg_filename):
     attach_list=[]
     # dir for empty files
     dirname = "%s.dd" % msg_filename 
-    if not os.path.exists(dirname): os.mkdir(dirname)
+    os.system("mkdir -p \"%s\"" % dirname)
     for part in msg.walk():
         filename = part.get_filename()
         if filename:
@@ -53,7 +53,7 @@ def dd_attach(msg, msg_filename):
             with open(os.path.join(dirname, filename),'wb') as fp:
                 fp.write(part.get_payload(decode=True))
             # write empty files (retaining mimtype)
-            os.system("dd if=/dev/zero of=\"%s\" bs=1 count=1" % os.path.join(dirname, filename))
+            os.system("dd if=/dev/zero of=\"%s\" bs=1 count=1 > /dev/null 2>&1" % os.path.join(dirname, filename))
     return attach_list
 
 def msg_del_attach(msg):
@@ -79,6 +79,7 @@ def update_msg(msg, msg_filename):
         encoders.encode_base64(attach)
         attach.add_header('Content-Disposition', 'attachment', filename=filename)
         msg.attach(attach)
+    os.system("rm -rf \"%s\"" % dirname)
     return msg
 
 def main(args):
