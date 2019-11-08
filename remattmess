@@ -53,7 +53,7 @@ def dd_attach(msg, msg_filename):
             with open(os.path.join(dirname, filename),'wb') as fp:
                 fp.write(part.get_payload(decode=True))
             # write empty files (retaining mimtype)
-            os.system("dd if=/dev/zero of=%s/%s bs=1 count=1 >/dev/null 2>&1" % (dirname, filename))
+            os.system("dd if=/dev/zero of=\"%s\" bs=1 count=1" % os.path.join(dirname, filename))
     return attach_list
 
 def msg_del_attach(msg):
