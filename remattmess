@@ -1,0 +1,97 @@
+#!/usr/bin/python3
+
+# remattmes
+# REMove ATTachments from MESsages
+# Script for remove attachments from msg-files
+# Copyright (C) 2019 Evgeniy Korneechev <ek@myconnector.ru>
+
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program. If not, see http://www.gnu.org/licenses/.
+
+# Thanks:
+# https://docs.python.org/2/library/email-examples.html
+# https://stackoverflow.com/questions/9937664/how-to-extract-attachments-from-msg-files/9937707
+
+import os
+import sys
+import mimetypes
+
+from email import message_from_file, encoders
+from email.mime.base import MIMEBase
+
+def backup_attach(msg, msg_filename):
+    dirname = "%s.backup" % msg_filename
+    os.mkdir(dirname)
+    for part in msg.walk():
+        filename = part.get_filename()
+        if filename:
+            fp = open(os.path.join(dirname, filename),'wb')
+            fp.write(part.get_payload(decode=True))
+            fp.close()
+    return
+
+def dd_attach(msg, msg_filename):
+    """Search attach, save names, dd zero->file,"""
+    attach_list=[]
+    # dir for empty files
+    dirname = "%s.dd" % msg_filename 
+    if not os.path.exists(dirname): os.mkdir(dirname)
+    for part in msg.walk():
+        filename = part.get_filename()
+        if filename:
+            attach_list.append(filename)
+            with open(os.path.join(dirname, filename),'wb') as fp:
+                fp.write(part.get_payload(decode=True))
+            # write empty files (retaining mimtype)
+            os.system("dd if=/dev/zero of=%s/%s bs=1 count=1 >/dev/null 2>&1" % (dirname, filename))
+    return attach_list
+
+def msg_del_attach(msg):
+    body = msg.get_payload()[0]
+    msg.set_payload([body])
+    return msg
+
+def update_msg(msg, msg_filename):
+    dirname = "%s.dd" % msg_filename
+    for filename in os.listdir(dirname):
+        path = os.path.join(dirname, filename)
+        if not os.path.isfile(path):
+            continue
+        ctype, encoding = mimetypes.guess_type(path)
+        if ctype is None or encoding is not None:
+            # No guess could be made, or the file is encoded (compressed), so
+            # use a generic bag-of-bits type.
+            ctype = 'application/octet-stream'
+        maintype, subtype = ctype.split('/', 1)
+        with open(path, 'rb') as fp:
+            attach = MIMEBase(maintype, subtype)
+            attach.set_payload(fp.read())
+        encoders.encode_base64(attach)
+        attach.add_header('Content-Disposition', 'attachment', filename=filename)
+        msg.attach(attach)
+    return msg
+
+def main(args):
+    with open(args[1]) as fp:
+        msg = message_from_file(fp)
+        msg_filename = fp.name
+
+    attach_list = dd_attach(msg, msg_filename)
+    msg = msg_del_attach(msg)
+    msg = update_msg (msg, msg_filename)
+    with open(args[1], "w") as fp:
+        print (msg, file=fp)
+        return 0
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))

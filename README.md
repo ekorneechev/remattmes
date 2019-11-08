@@ -1,2 +1,2 @@
-# remattmes
+# remattmess
 REMove ATTachments from MESsages
