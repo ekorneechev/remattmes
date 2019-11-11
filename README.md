@@ -1,5 +1,5 @@
 # remattmess
-REMove ATTachments from MESsages
+REMove ATTachments from MESSage
 
 Usage (The file is not backuped! Yet.):
 
