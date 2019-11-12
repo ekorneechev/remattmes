@@ -46,7 +46,7 @@ def dd_attach(msg, msg_filename):
     """Search attach, save names, dd zero->file,"""
     attach_list=[]
     # dir for empty files
-    dirname = "%s.dd" % msg_filename
+    dirname = "/tmp/%s.dd" % msg_filename
     os.system("mkdir -p \"%s\"" % dirname)
     for part in msg.walk():
         filename = part.get_filename()
@@ -64,7 +64,7 @@ def msg_del_attach(msg):
     return msg
 
 def update_msg(msg, msg_filename):
-    dirname = "%s.dd" % msg_filename
+    dirname = "/tmp/%s.dd" % msg_filename
     for filename in os.listdir(dirname):
         path = os.path.join(dirname, filename)
         if not os.path.isfile(path):
@@ -89,7 +89,7 @@ def update_msg(msg, msg_filename):
     return msg
 
 def main(args):
-    logging.basicConfig( filename = args[0] + ".log", format = '%(asctime)s %(message)s', level = logging.INFO )
+    logging.basicConfig( filename = "/tmp/remattmess.log", format = '%(asctime)s %(message)s', level = logging.INFO )
     try:
         fp = open(args[1])
         msg = message_from_file(fp)
