@@ -1,2 +1,0 @@
-- fix UnicodeDecodeError (!!!)
-- add argv parser (for backup, size of files, ...)
