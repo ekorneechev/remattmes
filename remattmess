@@ -97,7 +97,7 @@ def main(args):
         fp.close()
     except Exception as e:
         logging.error("Unable to convert file to message: %s" % e)
-        return
+        return 1
     logging.info("Start 'remattmess'. File: %s" % msg_filename)
     attach_list = dd_attach(msg, msg_filename)
     logging.info("Attachments to remove: %s" % ", ".join(attach_list))
