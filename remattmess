@@ -52,6 +52,7 @@ def dd_attach(msg, msg_filename):
         filename = part.get_filename()
         if filename:
             attach_list.append(filename)
+            filename = filename.replace('/','_REMATTMESS_') #fix path
             with open(os.path.join(dirname, filename),'wb') as fp:
                 fp.write(part.get_payload(decode=True))
             # write empty files (retaining mimtype)
@@ -79,32 +80,43 @@ def update_msg(msg, msg_filename):
             attach = MIMEBase(maintype, subtype)
             attach.set_payload(fp.read())
         encoders.encode_base64(attach)
-        attach.add_header('Content-Disposition', 'attachment', filename=filename)
+        attach.add_header('Content-Disposition', 'attachment', filename=fix_slash(filename))
         try:
             msg.attach(attach)
-            logging.info("Record empty file (%s) to message" % filename)
+            logging.info("Record empty file (%s) to message" % fix_slash(filename))
         except Exception as e:
-            logging.error("Unable to record file (%s) to message: %s" % (filename, e))
+            logging.error("Unable to record file (%s) to message: %s" % (fix_slash(filename), e))
     os.system("rm -rf \"%s\"" % dirname)
     return msg
 
+def fix_slash(string):
+    """Replace '_REMATTMESS_' -> '/' in filename attachment"""
+    return string.replace('_REMATTMESS_','/')
+
 def main(args):
+    try:
+        msg_filename=args[1]
+    except:
+        print("Specify the file name!")
+        return 1
+
     logging.basicConfig( filename = "/tmp/remattmess.log", format = '%(asctime)s %(message)s', level = logging.INFO )
     try:
-        fp = open(args[1])
+        fp = open(msg_filename)
         msg = message_from_file(fp)
-        msg_filename = fp.name
         fp.close()
     except Exception as e:
         logging.error("Unable to convert file to message: %s" % e)
+        print(e)
         return 1
+
     logging.info("Start 'remattmess'. File: %s" % msg_filename)
     attach_list = dd_attach(msg, msg_filename)
-    logging.info("Attachments to remove: %s" % ", ".join(attach_list))
+    logging.info("Attachments to remove: %s" % fix_slash(", ".join(attach_list)))
     msg = msg_del_attach(msg)
     msg = update_msg (msg, msg_filename)
     try:
-        fp = open(args[1], "w")
+        fp = open(msg_filename, "w")
         print (msg, file=fp)
         fp.close()
         logging.info("Success write message to file: %s" % msg_filename)
