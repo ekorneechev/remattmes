@@ -112,6 +112,9 @@ def main(args):
 
     logging.info("Start 'remattmess'. File: %s" % msg_filename)
     attach_list = dd_attach(msg, msg_filename)
+    if attach_list == []:
+        logging.info( "The message has no attachments. Exit." )
+        return 0
     logging.info("Attachments to remove: %s" % fix_slash(", ".join(attach_list)))
     msg = msg_del_attach(msg)
     msg = update_msg (msg, msg_filename)
