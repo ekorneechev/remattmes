@@ -61,8 +61,8 @@ def dd_attach(msg, msg_filename):
                     except TypeError as e: err = e
             except OSError as e: err = e
             if err:
-                logging.error( "Unable to open attachment: %s" % err )
-                attach_list.pop()
+                logging.error( "Unable to open attachment!" )
+                logging.debug( err )
             # write empty files (retaining mimtype)
             os.system("dd if=/dev/zero of=\"%s\" bs=1 count=1 > /dev/null 2>&1" % os.path.join(dirname, filename))
     return attach_list
@@ -91,9 +91,10 @@ def update_msg(msg, msg_filename):
         attach.add_header('Content-Disposition', 'attachment', filename=fix_slash(filename))
         try:
             msg.attach(attach)
-            logging.info("Record empty file (%s) to message" % fix_slash(filename))
+            logging.debug("Record empty file (%s) to message." % fix_slash(filename))
         except Exception as e:
-            logging.error("Unable to record file (%s) to message: %s" % (fix_slash(filename), e))
+            logging.error( "Unable to record file (%s) to message." % fix_slash( filename ) )
+            logging.debug( e )
     os.system("rm -rf \"%s\"" % dirname)
     return msg
 
@@ -108,32 +109,34 @@ def main(args):
         print("Specify the file name!")
         return 1
 
-    logging.basicConfig( filename = "/tmp/remattmess.log", format = '%(asctime)s %(message)s', level = logging.INFO )
+    log_level = logging.DEBUG
+    logging.basicConfig( filename = "/tmp/remattmess.log", format = '%(asctime)s - %(levelname)s: %(message)s', level = log_level )
     try:
         fp = open(msg_filename)
         msg = message_from_file(fp)
         fp.close()
     except Exception as e:
-        logging.error("Unable to convert file to message: %s" % e)
-        print(e)
+        logging.error( "Unable to convert file to message." )
+        logging.debug( e )
         return 1
 
     logging.info("Start 'remattmess'. File: %s" % msg_filename)
     attach_list = dd_attach(msg, msg_filename)
     if attach_list == []:
-        logging.info( "The message has no attachments. Exit." )
+        logging.info( "The message has no attachments." )
         return 0
-    logging.info("Attachments to remove: %s" % fix_slash(", ".join(attach_list)))
+    logging.debug( "Attachments to remove: %s" % fix_slash( ", ".join( attach_list ) ) )
     msg = msg_del_attach(msg)
     msg = update_msg (msg, msg_filename)
     try:
         fp = open(msg_filename, "w")
         print (msg, file=fp)
         fp.close()
-        logging.info("Success write message to file: %s" % msg_filename)
+        logging.info( "Attachment deletion completed." )
         return 0
     except Exception as e:
-        logging.error("Unable to write message to file: %s" % e)
+        logging.error( "Unable to write message to file." )
+        logging.debug( e )
         return 1
 
 if __name__ == '__main__':
