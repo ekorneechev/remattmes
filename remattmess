@@ -27,6 +27,7 @@ import sys
 import mimetypes
 import logging
 import subprocess
+import argparse
 
 from email import message_from_file, encoders
 from email.mime.base import MIMEBase
@@ -103,13 +104,13 @@ def fix_slash(string):
     return string.replace('#','/')
 
 def main(args):
-    try:
-        msg_filename=args[1]
-    except:
-        print("Specify the file name!")
-        return 1
+    parser = argparse.ArgumentParser( description="REMove ATTachments from MESSage", formatter_class=argparse.RawDescriptionHelpFormatter )
+    parser.add_argument( "-d", "--debug", action = "store_true", dest = "debug", default = False,  help = "debug output" )
+    parser.add_argument( "message", type = str, help = "message (file .eml or .msg) for remove" )
+    args = parser.parse_args()
 
-    log_level = logging.DEBUG
+    msg_filename = args.message
+    log_level = logging.DEBUG if args.debug else logging.INFO
     logging.basicConfig( filename = "/tmp/remattmess.log", format = '%(asctime)s - %(levelname)s: %(message)s', level = log_level )
     try:
         fp = open(msg_filename)

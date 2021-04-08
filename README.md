@@ -1,10 +1,16 @@
 # remattmess
+
+```usage: remattmess [-h] [-d] message
+
 REMove ATTachments from MESSage
 
-Usage (The file is not backuped! Yet.):
+positional arguments:
+  message      message (file .eml or .msg) for remove
 
-    remattmess <message_file>
-
+optional arguments:
+  -h, --help   show this help message and exit
+  -d, --debug  debug output
+```
 for multiple files:
 
     find . -type f  \( -name *.eml -o -name *.msg \) -exec remattmess {} \;
