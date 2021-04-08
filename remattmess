@@ -53,11 +53,15 @@ def dd_attach(msg, msg_filename):
         if filename:
             attach_list.append(filename)
             filename = filename.replace( '/', '#' ) #fix path
+            err = ""
             try:
                 with open( os.path.join( dirname, filename ), 'wb' ) as fp:
-                    fp.write( part.get_payload( decode=True ) )
-            except OSError as e:
-                logging.error( "Unable to open attachment: %s" % e )
+                    try:
+                        fp.write( part.get_payload( decode=True ) )
+                    except TypeError as e: err = e
+            except OSError as e: err = e
+            if err:
+                logging.error( "Unable to open attachment: %s" % err )
                 attach_list.pop()
             # write empty files (retaining mimtype)
             os.system("dd if=/dev/zero of=\"%s\" bs=1 count=1 > /dev/null 2>&1" % os.path.join(dirname, filename))
