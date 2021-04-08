@@ -1,6 +1,7 @@
 # remattmess
 
-```usage: remattmess [-h] [-d] message
+```
+usage: remattmess [-h] [-d] message
 
 REMove ATTachments from MESSage
 
