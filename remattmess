@@ -32,6 +32,9 @@ import argparse
 from email import message_from_file, encoders
 from email.mime.base import MIMEBase
 
+save_attach_index = []
+save_attach_index.append( 0 )
+
 def backup_attach(msg, msg_filename):
     dirname = "%s.backup" % msg_filename
     os.mkdir(dirname)
@@ -49,6 +52,7 @@ def dd_attach(msg, msg_filename):
     # dir for empty files
     dirname = "/tmp/%s.dd" % os.path.basename(msg_filename)
     os.system("mkdir -p \"%s\"" % dirname)
+    i = 0
     for part in msg.walk():
         filename = part.get_filename()
         if filename:
@@ -60,17 +64,22 @@ def dd_attach(msg, msg_filename):
                     try:
                         fp.write( part.get_payload( decode=True ) )
                     except TypeError as e: err = e
-            except OSError as e: err = e
+            except OSError as e:
+                save_attach_index.append( i-1 )
+                err = e
             if err:
                 logging.error( "Unable to open attachment!" )
                 logging.debug( err )
             # write empty files (retaining mimtype)
             os.system("dd if=/dev/zero of=\"%s\" bs=1 count=1 > /dev/null 2>&1" % os.path.join(dirname, filename))
+        i += 1
     return attach_list
 
 def msg_del_attach(msg):
-    body = msg.get_payload()[0]
-    msg.set_payload([body])
+    parts = []
+    for i in save_attach_index:
+        parts.append( msg.get_payload()[i] )
+    msg.set_payload( parts )
     return msg
 
 def update_msg(msg, msg_filename):
