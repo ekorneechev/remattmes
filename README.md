@@ -16,12 +16,4 @@ for multiple files:
 
     find . -type f  \( -name *.eml -o -name *.msg \) -exec remattmess {} \;
 
-For python2:
-
-    -#!/usr/bin/python3
-    +#!/usr/bin/python2
-    ...
-    +from __future__ import print_function
-    ...
-    import os
-    ...
+For python2 (2.6 and above) use remattmess.py2 (usage: remattmess message)
