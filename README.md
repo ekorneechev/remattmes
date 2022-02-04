@@ -15,3 +15,13 @@ optional arguments:
 for multiple files:
 
     find . -type f  \( -name *.eml -o -name *.msg \) -exec remattmess {} \;
+
+For python2:
+
+    -#!/usr/bin/python3
+    +#!/usr/bin/python2
+    ...
+    +from __future__ import print_function
+    ...
+    import os
+    ...
