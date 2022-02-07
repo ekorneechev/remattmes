@@ -32,6 +32,8 @@ import argparse
 from email import message_from_file, encoders
 from email.mime.base import MIMEBase
 
+dirname = ""
+
 def backup_attach(msg, msg_filename):
     dirname = "%s.backup" % msg_filename
     os.mkdir(dirname)
@@ -47,8 +49,12 @@ def dd_attach(msg, msg_filename):
     """Search attach, save names, dd zero->file,"""
     attach_list=[]
     # dir for empty files
-    dirname = "/tmp/%s.dd" % os.path.basename(msg_filename)
-    os.system("mkdir -p \"%s\"" % dirname)
+    global dirname
+    try:
+        os.mkdir( dirname )
+    except:
+        logging.error( "Unable to create folder for attachments!" )
+        exit (1)
     for part in msg.walk():
         filename = part.get_filename()
         if filename:
@@ -74,7 +80,7 @@ def msg_del_attach(msg):
     return msg
 
 def update_msg(msg, msg_filename):
-    dirname = "/tmp/%s.dd" % os.path.basename(msg_filename)
+    global dirname
     for filename in os.listdir(dirname):
         path = os.path.join(dirname, filename)
         if not os.path.isfile(path):
@@ -122,9 +128,12 @@ def main(args):
         return 1
 
     logging.info("Start 'remattmess'. File: %s" % msg_filename)
+    global dirname
+    dirname = "/tmp/%s.dd" % os.path.basename(msg_filename)
     attach_list = dd_attach(msg, msg_filename)
     if attach_list == []:
         logging.info( "The message has no attachments." )
+        os.system("rm -rf \"%s\"" % dirname)
         return 0
     logging.debug( "Attachments to remove: %s" % fix_slash( ", ".join( attach_list ) ) )
     msg = msg_del_attach(msg)
