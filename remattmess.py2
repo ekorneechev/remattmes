@@ -55,8 +55,9 @@ def dd_attach(msg, msg_filename):
     global dirname
     try:
         os.mkdir( dirname )
-    except:
+    except OSError as e:
         logging.error( "Unable to create folder for attachments!" )
+        logging.debug( e )
         exit (1)
     for part in msg.walk():
         filename = part.get_filename()
@@ -64,14 +65,20 @@ def dd_attach(msg, msg_filename):
             attach_list.append(filename)
             filename = filename.replace( '/', '#' ) #fix path
             err = ""
+            attachment = os.path.join( dirname, filename )
+            if len( attachment ) > 220:
+                filename = filename[:200] + filename[-12:]
             try:
                 with open( os.path.join( dirname, filename ), 'wb' ) as fp:
                     try:
                         fp.write( part.get_payload( decode=True ) )
-                    except TypeError as e: err = e
-            except OSError as e: err = e
+                    except TypeError as e:
+                        err = e
+            except (OSError, IOError) as e:
+                err = e
             if err:
-                logging.error( "Unable to open attachment!" )
+                attach_list.pop()
+                logging.error( "Unable to open attachment! Saved as is." )
                 logging.debug( err )
             # write empty files (retaining mimtype)
             os.system("dd if=/dev/zero of=\"%s\" bs=1 count=1 > /dev/null 2>&1" % os.path.join(dirname, filename))
@@ -130,7 +137,7 @@ def main(args):
     dirname = "/tmp/%s.dd" % os.path.basename(msg_filename)
     attach_list = dd_attach(msg, msg_filename)
     if attach_list == []:
-        logging.info( "The message has no attachments." )
+        logging.info( "The message has no attachments (or with errors)." )
         os.system("rm -rf \"%s\"" % dirname)
         return 0
     logging.debug( "Attachments to remove: %s" % fix_slash( ", ".join( attach_list ) ) )
