@@ -61,8 +61,8 @@ def dd_attach(msg, msg_filename):
         if filename:
             attach_list.append(filename)
             filename = filename.replace( '/', '#' ) #fix path
-            if len( filename ) > 220:
-                filename = filename[:200] + filename[-12:]
+            if len( filename ) > 170:
+                filename = filename[:150] + filename[-12:]
             attachment = os.path.join( dirname, filename )
             # write empty files (retaining mimtype)
             try:
