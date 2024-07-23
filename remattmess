@@ -3,7 +3,7 @@
 # remattmess
 # REMove ATTachments from MESSage
 # Script for remove attachments from msg-file
-# Copyright (C) 2021 Evgeniy Korneechev <ek@myconnector.ru>
+# Copyright (C) 2024 Evgeniy Korneechev <ek@myconnector.ru>
 
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -31,6 +31,7 @@ import argparse
 
 from email import message_from_binary_file, encoders
 from email.mime.base import MIMEBase
+from shlex import quote
 
 dirname = ""
 
@@ -66,7 +67,7 @@ def dd_attach(msg, msg_filename):
             attachment = os.path.join( dirname, filename )
             # write empty files (retaining mimtype)
             try:
-                os.system( "touch \"%s\"" % attachment )
+                os.system( "touch %s" % quote( attachment ) )
             except Exception as e:
                 logging.error( "Unable to write empty attachment." )
                 logging.debug( e )
