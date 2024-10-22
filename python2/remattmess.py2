@@ -125,7 +125,7 @@ def main(args):
         return 1
 
     logging.info("Start 'remattmess'. File: %s" % msg_filename)
-    logging.debug( "File size: %i KB" % ( os.path.getsize( msg_filename ) / 1024 ) )
+    logging.debug( "File size 'before': %i KB" % ( os.path.getsize( msg_filename ) / 1024 ) )
     global dirname
     dirname = "/tmp/%s.dd" % os.path.basename(msg_filename)
     attach_list = dd_attach(msg, msg_filename)
@@ -140,6 +140,7 @@ def main(args):
         fp = open(msg_filename, "w")
         print (msg, file=fp)
         fp.close()
+        logging.debug( "File size 'after': %i KB" % ( os.path.getsize( msg_filename ) / 1024 ) )
         logging.info( "Attachments zeroing completed." )
         return 0
     except Exception as e:
