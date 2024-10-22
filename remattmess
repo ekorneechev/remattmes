@@ -130,6 +130,7 @@ def main(args):
         return 1
 
     logging.info("Start 'remattmess'. File: %s" % msg_filename)
+    logging.debug( "File size: %i KB" % ( os.path.getsize( msg_filename ) / 1024 ) )
     global dirname
     dirname = "/tmp/%s.dd" % os.path.basename(msg_filename)
     attach_list = dd_attach(msg, msg_filename)
