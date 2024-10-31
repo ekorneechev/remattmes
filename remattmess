@@ -32,8 +32,11 @@ import argparse
 from email import message_from_binary_file, encoders
 from email.mime.base import MIMEBase
 from shlex import quote
+from subprocess import check_output
 
 dirname = ""
+
+VERSION = "0.6"
 
 def backup_attach(msg, msg_filename):
     dirname = "%s.backup" % msg_filename
@@ -111,15 +114,44 @@ def fix_slash(string):
     """Replace '#' -> '/' in filename attachment"""
     return string.replace('#','/')
 
+def update():
+    "Updating script"
+    print( "Checking version...")
+    currentVersion = check_output( "curl https://raw.githubusercontent.com/ekorneechev/remattmess/master/VERSION 2>/dev/null; exit 0",
+                                   shell=True, universal_newlines=True ).strip()
+    if not currentVersion:
+        print( "Check your Internet connection!" )
+        return 6
+    need_update = False
+    if VERSION == currentVersion:
+        print ( "Your version is actual: %s" %VERSION )
+        return 0
+    else:
+        user_input = input( "Do you want to upgrade to the current version? ")
+        if not user_input.lower() in [ "yes", "y" ]:
+            return 130
+        os.system( "curl -O https://raw.githubusercontent.com/ekorneechev/remattmess/master/remattmess" )
+
 def main(args):
     parser = argparse.ArgumentParser( description="REMove ATTachments from MESSage", formatter_class=argparse.RawDescriptionHelpFormatter )
     parser.add_argument( "-d", "--debug", action = "store_true", dest = "debug", default = False,  help = "debug output" )
-    parser.add_argument( "message", type = str, help = "message (file .eml or .msg) for remove" )
+    parser.add_argument( "-u", "--update", action = "store_true", dest = "update", default = False,  help = "update script" )
+    parser.add_argument( "message", type = str,  nargs = "?", metavar = "FILE", help = "message (file .eml or .msg) for remove" )
+    parser.add_argument( "-v", "--version", action = "version", help = "show version", version = VERSION )
     args = parser.parse_args()
 
     msg_filename = args.message
     log_level = logging.DEBUG if args.debug else logging.INFO
     logging.basicConfig( filename = "/tmp/remattmess.log", format = '%(asctime)s - %(levelname)s: %(message)s', level = log_level )
+
+    if args.update:
+        update()
+        return 0
+
+    if not msg_filename:
+        print ( "No file specified" )
+        return 2
+
     try:
         fp = open(msg_filename, "rb")
         msg = message_from_binary_file(fp)
