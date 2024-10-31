@@ -1,16 +1,20 @@
 # remattmess
 
+Version: 0.6
+
 ```
-usage: remattmess [-h] [-d] message
+usage: remattmess [-h] [-d] [-u] [-v] [FILE]
 
 REMove ATTachments from MESSage
 
 positional arguments:
-  message      message (file .eml or .msg) for remove
+  FILE           message (file .eml or .msg) for remove
 
-optional arguments:
-  -h, --help   show this help message and exit
-  -d, --debug  debug output
+options:
+  -h, --help     show this help message and exit
+  -d, --debug    debug output
+  -u, --update   update script
+  -v, --version  show version
 ```
 for multiple files:
 
